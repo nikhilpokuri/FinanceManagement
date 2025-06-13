@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>Register New Customer</h3>
+
+<form method="POST" class="p-4 border rounded bg-light">
+  <div class="mb-3">
+    <label for="name" class="form-label">Customer Name</label>
+    <input type="text" class="form-control" name="name" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="phone" class="form-label">Phone Number</label>
+    <input type="text" class="form-control" name="phone" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="location" class="form-label">Village</label>
+    <input type="text" class="form-control" name="location" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="loan_type" class="form-label">Loan Type</label>
+    <select class="form-select" name="loan_type" required>
+      <option value="money">Money</option>
+      <option value="furniture">Furniture</option>
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label for="amount" class="form-label">Total Amount</label>
+    <input type="number" class="form-control" name="amount" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="weeks" class="form-label">Number of Weeks</label>
+    <input type="number" class="form-control" name="weeks" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="weekly_installment" class="form-label">Weekly Installment</label>
+    <input type="number" class="form-control" name="weekly_installment" required>
+  </div>
+
+  <button type="submit" class="btn btn-success">Register</button>
+</form>
+<br>
+{% endblock %}

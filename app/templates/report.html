@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>Customer Report</h3>
+
+<form method="GET" action="{{ url_for('main.report') }}" class="row g-2 mb-4">
+  <div class="col-md-3">
+    <label for="location" class="form-label">Location</label>
+    <select name="location" class="form-select">
+      <option value="">-- All Locations --</option>
+      {% for loc in locations %}
+      <option value="{{ loc }}" {% if request.args.get('location') == loc %}selected{% endif %}>{{ loc }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  
+  <div class="col-md-3">
+    <label for="from_date" class="form-label">From Date</label>
+    <input type="date" name="from_date" class="form-control" value="{{ request.args.get('from_date', '') }}">
+  </div>
+
+  <div class="col-md-3">
+    <label for="to_date" class="form-label">To Date</label>
+    <input type="date" name="to_date" class="form-control" value="{{ request.args.get('to_date', '') }}">
+  </div>
+
+  <div class="col-md-3 d-flex justify-content-center align-items-end mt-3">
+    <button type="submit" class="btn btn-primary me-2">🔍 View</button>
+    <a href="{{ url_for('main.export_csv', location=request.args.get('location'), from_date=request.args.get('from_date'), to_date=request.args.get('to_date')) }}" class="btn btn-success">📤 Export CSV</a>
+  </div>
+</form>
+
+
+
+<div class="table-responsive mb-4">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Customer Name</th>
+        <th>Phone</th>
+        <th>Location</th>
+        <th>Loan Type</th>
+        <th>Amount</th>
+        <th>Weeks</th>
+        <th>Paid Weeks</th>
+        <th>Due Weeks</th>
+        <th>Status</th>
+        <th>Date Given</th>
+      </tr>
+    </thead>
+    <tbody id="report-body">
+      <!-- JavaScript will insert paginated rows -->
+    </tbody>
+  </table>
+</div>
+
+
+
+<div class="d-flex justify-content-between mb-5">
+  <button class="btn btn-outline-secondary" id="prevBtn">Previous</button>
+  <button class="btn btn-outline-secondary" id="nextBtn">Next</button>
+</div>
+
+<!-- Scrollable Bar Chart (Hidden for now) -->
+<!--
+<div style="width: 100%; overflow-x: auto; margin-bottom: 40px;">
+  <canvas id="barChart" height="120"></canvas>
+</div>
+-->
+
+<!-- Pie Chart -->
+<hr>
+<div style="height: 40vh; display: flex; justify-content: center; align-items: center;">
+  <canvas id="pieChart" height="100"></canvas>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const report = {{ report | tojson }};
+const data = {{ chart_data | tojson }};
+const tbody = document.getElementById("report-body");
+let currentPage = 1;
+const pageSize = 20;
+
+function renderRows() {
+  tbody.innerHTML = '';
+  const start = (currentPage - 1) * pageSize;
+  const rows = report.slice(start, start + pageSize);
+
+  rows.forEach(row => {
+    const tr = document.createElement('tr');
+    tr.className = row.status === 'paid' ? 'table-success' : 'table-danger';
+    tr.innerHTML = `
+      <td>${row.name}</td>
+      <td>${row.phone}</td>
+      <td>${row.location}</td>
+      <td>${row.loan_type}</td>
+      <td>₹${row.amount}</td>
+      <td>${row.weeks}</td>
+      <td>${row.paid_weeks}</td>
+      <td>${row.due_weeks}</td>
+      <td>${row.status}</td>
+      <td>${row.date_given}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("prevBtn").disabled = currentPage === 1;
+  document.getElementById("nextBtn").disabled = start + pageSize >= report.length;
+}
+
+document.getElementById("nextBtn").onclick = () => { currentPage++; renderRows(); };
+document.getElementById("prevBtn").onclick = () => { currentPage--; renderRows(); };
+renderRows();
+
+
+// Doughnut Chart
+const pie = new Chart(document.getElementById("pieChart"), {
+  type: 'doughnut',
+  data: {
+    labels: ["Total Paid", "Total Due"],
+    datasets: [{
+      label: "Installment Summary",
+      data: [data.total_paid, data.total_due],
+      backgroundColor: ["green", "red"]
+    }]
+  },
+  options: {
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function(ctx) {
+            return `${ctx.label}: ${ctx.raw} Installments`;
+          }
+        }
+      }
+    }
+  }
+});
+</script>
+{% endblock %}

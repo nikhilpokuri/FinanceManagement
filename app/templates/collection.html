@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>Money Collection</h3>
+
+<!-- Search Form -->
+<form method="POST" class="mb-4">
+  <div class="input-group">
+    <input type="text" name="search" class="form-control" placeholder="Enter name or phone number" required>
+    <button type="submit" class="btn btn-primary">Search</button>
+  </div>
+</form>
+
+{% if customer %}
+<div class="card mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ customer.name }} ({{ customer.phone }})</h5>
+    <p>Location: {{ customer.location }}</p>
+  </div>
+</div>
+
+<!-- Loan Selector -->
+{% if loans %}
+<form method="GET" action="{{ url_for('main.collection') }}" class="mb-3">
+  <input type="hidden" name="search" value="{{ customer.phone }}">
+  <div class="input-group">
+    <select name="loan_id" class="form-select" required>
+      {% for loan in loans %}
+        <option value="{{ loan.id }}" {% if selected_loan and loan.id == selected_loan.id %}selected{% endif %}>
+          {{ loan.loan_type }} | ₹{{ loan.amount }} | {{ loan.date_given.strftime('%Y-%m-%d') }}
+        </option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-secondary">View Loan</button>
+  </div>
+</form>
+{% endif %}
+{% endif %}
+
+<!-- Installment Table -->
+{% if selected_loan %}
+<h5>Installments for {{ selected_loan.loan_type }} Loan (₹{{ selected_loan.amount }})</h5>
+<table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Week</th>
+      <th>Due Date</th>
+      <th>Paid On</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="installment-body"></tbody>
+</table>
+
+<div class="d-flex justify-content-between mb-4">
+  <button class="btn btn-outline-secondary" id="prevBtn">Previous</button>
+  <button class="btn btn-outline-secondary" id="nextBtn">Next</button>
+</div>
+
+<!-- Summary Chart -->
+<h5>Installment Summary</h5>
+<div style="max-width: 600px;">
+  <canvas id="userChart" height="100"></canvas>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+
+
+{% if installments %}
+const installments = {{ installments | tojson }};
+const customerName = "{{ customer.name }}";
+
+let currentPage = 1;
+const pageSize = 20;
+const tbody = document.getElementById("installment-body");
+
+function renderRows() {
+  tbody.innerHTML = '';
+  const start = (currentPage - 1) * pageSize;
+  const rows = installments.slice(start, start + pageSize);
+
+  rows.forEach((inst) => {
+    const tr = document.createElement('tr');
+    const paidStatus = inst.paid ? inst.paid_on : 'Pending';
+    const action = inst.paid
+      ? `<span class="text-success">✓</span>`
+      : `<form method="POST" action="/mark_paid/${inst.id}" onsubmit="return confirm('Mark installment as paid?')">
+  <input type="hidden" name="loan_id" value="{{ selected_loan.id }}">
+  <input type="hidden" name="search" value="{{ customer.phone }}">
+  <button type="submit" class="btn btn-sm btn-success">Mark Paid</button>
+</form>`;
+
+    tr.innerHTML = `
+      <td>Week ${inst.week_number}</td>
+      <td>${inst.due_date}</td>
+      <td>${paidStatus}</td>
+      <td>${action}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById("prevBtn").disabled = currentPage === 1;
+  document.getElementById("nextBtn").disabled = (start + pageSize) >= installments.length;
+}
+
+document.getElementById("nextBtn").onclick = () => { currentPage++; renderRows(); };
+document.getElementById("prevBtn").onclick = () => { currentPage--; renderRows(); };
+
+renderRows();
+
+// Chart
+const paidCount = installments.filter(i => i.paid).length;
+const dueCount = installments.filter(i => !i.paid).length;
+
+new Chart(document.getElementById("userChart"), {
+  type: 'bar',
+  data: {
+    labels: ['Paid', 'Due'],
+    datasets: [{
+      label: 'Weeks',
+      data: [paidCount, dueCount],
+      backgroundColor: ['green', 'red'],
+      borderRadius: 6
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { display: false }
+    }
+  }
+});
+{% endif %}
+</script>
+{% endblock %}

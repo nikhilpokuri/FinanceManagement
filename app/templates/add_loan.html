@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<h3>New Loan for Existing Customer</h3>
+
+<form method="POST">
+  <div class="input-group mb-3">
+    <input type="text" name="phone" placeholder="Enter Phone Number" class="form-control" required>
+    <button type="submit" class="btn btn-primary">Search</button>
+  </div>
+</form>
+
+{% if customer %}
+<hr>
+<p><strong>{{ customer.name }}</strong> ({{ customer.phone }}) - {{ customer.location }}</p>
+
+<form method="POST">
+  <input type="hidden" name="phone" value="{{ customer.phone }}">
+  <input type="hidden" name="loan_submit" value="1">
+  
+  <div class="mb-3">
+    <label>Loan Type</label>
+    <select name="loan_type" class="form-select" required>
+      <option value="money">Money</option>
+      <option value="furniture">Furniture</option>
+    </select>
+  </div>
+  <div class="mb-3">
+    <label>Amount</label>
+    <input type="number" name="amount" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Weeks</label>
+    <input type="number" name="weeks" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label>Weekly Installment</label>
+    <input type="number" name="weekly_installment" class="form-control" required>
+  </div>
+
+  <button type="submit" class="btn btn-success">Add Loan</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5" style="margin-top: 23% !important;">
+  <hr class="my-5">
+  <div class="row g-4 justify-content-center">
+    
+     <!-- Add Customer -->
+    <div class="col-6 col-sm-4 col-md-3">
+      <a href="{{ url_for('main.register') }}" class="text-decoration-none">
+        <div class="card text-center shadow-sm border-0 h-100">
+          <div class="card-body">
+            <i class="fas fa-solid fa-sack-dollar fa-3x text-success"></i>
+            <i class="fas fa-solid fa-user-plus fa-2x text-success"></i>
+            <h6 class="mt-2">New Loan</h6>
+          </div>
+        </div>
+      </a>
+    </div>
+
+        <!-- Disbursement -->
+    <div class="col-6 col-sm-4 col-md-3">
+      <a href="{{ url_for('main.add_loan') }}" class="text-decoration-none">
+        <div class="card text-center shadow-sm border-0 h-100">
+          <div class="card-body">
+            <i class="fas fa-hand-holding-usd fa-3x text-warning"></i>
+            <h6 class="mt-2">Another Loan</h6>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Collection -->
+    <div class="col-6 col-sm-4 col-md-3">
+      <a href="{{ url_for('main.collection') }}" class="text-decoration-none">
+        <div class="card text-center shadow-sm border-0 h-100">
+          <div class="card-body">
+            <i class="fas fa-money-bill-wave fa-3x text-info"></i>
+            <h6 class="mt-2">Collection</h6>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Reports -->
+    <div class="col-6 col-sm-4 col-md-3">
+      <a href="{{ url_for('main.report') }}" class="text-decoration-none">
+        <div class="card text-center shadow-sm border-0 h-100">
+          <div class="card-body">
+            <!-- <i class="fas fa-chart-bar fa-3x text-secondary"></i> -->
+            <i class="fas fa-solid fa-chart-line text-secondary fa-3x me-2"></i>
+            <h6 class="mt-2">Analytics</h6>
+          </div>
+        </div>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Hide the back button on this page
+  document.addEventListener('DOMContentLoaded', function () {
+    const backBtn = document.getElementById('bck-btn');
+    if (backBtn) {
+      backBtn.style.display = 'none';
+    }
+  });
+</script>
+{% endblock %}

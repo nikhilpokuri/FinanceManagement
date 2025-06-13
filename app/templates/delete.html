@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3>Delete Data</h3>
+  <form method="POST" class="mb-3">
+    <div class="input-group">
+      <input type="text" name="phone" class="form-control" placeholder="Enter phone number" required>
+      <button type="submit" class="btn btn-danger">Search</button>
+    </div>
+  </form>
+
+  {% if customer %}
+    <div class="alert alert-info">
+      <strong>{{ customer.name }}</strong> from <strong>{{ customer.location }}</strong> has <strong>{{ loans|length }}</strong> loan(s).
+    </div>
+
+    <!-- Delete All Button -->
+    <form method="POST" action="{{ url_for('main.delete_customer') }}" onsubmit="return confirm('Delete entire customer and all data');">
+      <input type="hidden" name="phone" value="{{ customer.phone }}">
+      <button type="submit" class="btn btn-danger mb-3">🗑️ Delete Customer</button>
+    </form>
+
+    <!-- Selective Loan Deletion -->
+    <form method="POST" action="{{ url_for('main.delete_loans') }}" onsubmit="return confirm('Delete selected loan(s)?');">
+      <input type="hidden" name="phone" value="{{ customer.phone }}">
+      {% for loan in loans %}
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="loan_ids" value="{{ loan.id }}" id="loan{{ loan.id }}">
+          <label class="form-check-label" for="loan{{ loan.id }}">
+            {{ loan.loan_type }} - ₹{{ loan.amount }} - {{ loan.date_given.strftime('%Y-%m-%d') }}
+          </label>
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-warning mt-3">🧹 Delete Selected Loans</button>
+    </form>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+<script>
+function confirmDelete() {
+  return confirm("Are you sure you want to delete the selected loan(s)? This action cannot be undone.");
+}
+</script>
